@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Injetec{% endblock %}</title>
+    
+    <!-- Meta tags para SEO -->
+    <meta name="description" content="{% block meta_description %}Gestão Inteligente de Frotas{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Injetec, Gestão de Frotas, Telemetria{% endblock %}">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="{% block og_title %}Injetec{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Excelência na gestão de seus ativos e frotas.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'linux/images/banner.png' %}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}https://injetec.com.br{% endblock %}">
+    
+    <!-- CSS Files -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'linux/css/style.css' %}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#"><img src="{% static 'linux/images/logo.png' %}" alt="Injetec" width="150"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">Sobre</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="solutionsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Soluções
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="solutionsDropdown">
+                            <a class="dropdown-item" href="#">Limitador de Velocidade</a>
+                            <a class="dropdown-item" href="#">Router Remoto</a>
+                            <a class="dropdown-item" href="#">Battery Check</a>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contato</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="clientAreaDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Área do Cliente
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="clientAreaDropdown">
+                            <a class="dropdown-item" href="#" target="_blank">Acesso Router Remoto</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-light text-dark py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Logo e Direitos Reservados -->
+                <div class="col-md-3">
+                    <img src="{% static 'linux/images/logo.png' %}" alt="Injetec" width="150" class="mb-3">
+                    <p>&copy; 2024 Injetec. Todos os direitos reservados.</p>
+                    <p>Desenvolvido por <a href="https://injetec.com.br" class="text-dark">Injetec</a></p>
+                </div>
+                <!-- Soluções -->
+                <div class="col-md-3">
+                    <h5>Soluções</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'limitador_de_velocidade' %}" class="text-dark">Limitador de Velocidade</a></li>
+                        <li><a href="{% url 'router_remoto' %}" class="text-dark">Router Remoto</a></li>
+                        <li><a href="{% url 'battery_check' %}" class="text-dark">Battery Check</a></li>
+                    </ul>
+                </div>
+                <!-- A Empresa -->
+                <div class="col-md-3">
+                    <h5>A Empresa</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'about' %}" class="text-dark">A Injetec</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-dark">Contato</a></li>
+                        <li><a href="{% url 'politica_privacidade' %}" class="text-dark">Política de Privacidade</a></li>
+                        <li><a href="{% url 'termos_uso' %}" class="text-dark">Termos de Uso</a></li>
+                    </ul>
+                </div>
+                <!-- Conformidade e LGPD -->
+                <div class="col-md-3">
+                    <h5>Conformidade</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'politica_cookies' %}" class="text-dark">Política de Cookies</a></li>
+                        <li><a href="{% url 'lgpd' %}" class="text-dark">LGPD - Lei Geral de Proteção de Dados</a></li>
+                        <li><a href="{% url 'contato_privacidade' %}" class="text-dark">Contato para Privacidade</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col text-center">
+                    <small>Este site é protegido por reCAPTCHA e a política de privacidade do Google e termos de serviço se aplicam.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

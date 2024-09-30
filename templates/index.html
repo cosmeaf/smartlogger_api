@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="hero" style="background: linear-gradient(135deg, #2A4D69, #4B86B4); padding: 60px 0;">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <a href="https://api.whatsapp.com/send?l=pt&phone=5531971281895" target="_blank" class="whatsapp-icon">
+          <img src="{% static 'linux/images/whatsapp.png' %}" alt="WhatsApp" style="width: 40px; height: 40px;">
+        </a>
+        <div class="hero-tel mt-2 text-white">(31) 3333-2115 / (31) 97128-1895</div>
+        <div class="hero-slider-content mt-4">
+          <h1 class="text-white">Limitador de Velocidade</h1>
+          <p class="text-white"><strong>Sistema de segurança</strong> que evita que a máquina ultrapasse a velocidade programada.</p>
+          <a href="{% url 'limitador_de_velocidade' %}" class="btn btn-success">Saiba mais</a>
+        </div>
+      </div>
+      <div class="col-md-6 text-center">
+        <div class="hero-slider-img">
+          <img src="{% static 'linux/images/limitador.png' %}" alt="Limitador de Velocidade" class="img-fluid" style="max-width: 60%; height: auto;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section cta-destaque py-5" style="background-color: #2A4D69;">
+  <div class="container">
+    <div class="cta-destaque-inner text-center text-white">
+      <h2 class="font-weight-bold" style="font-size: 2.5rem;">O controle da sua frota nas suas mãos. 7 dias por semana. 24 horas por dia.</h2>
+      <p class="lead" style="font-size: 1.25rem;">Traga a sua empresa para a indústria 4.0 e comece a economizar com custos de frota agora!</p>
+      <a href="{% url 'contact' %}" class="btn btn-success btn-lg mt-4">Confira as condições</a>
+    </div>
+  </div>
+</div>
+
+<div class="section clientes py-5">
+  <div class="container">
+    <div class="clientes-inner">
+      <h2 class="text-center">Alguns dos Clientes Injetec</h2>
+      <div id="clienteCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="d-flex justify-content-around">
+              <img src="{% static 'linux/images/clientes/1.jpg' %}" alt="Cliente 1">
+              <img src="{% static 'linux/images/clientes/2.jpg' %}" alt="Cliente 2">
+              <img src="{% static 'linux/images/clientes/3.jpg' %}" alt="Cliente 3">
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="d-flex justify-content-around">
+              <img src="{% static 'linux/images/clientes/4.jpg' %}" alt="Cliente 4">
+              <img src="{% static 'linux/images/clientes/5.jpg' %}" alt="Cliente 5">
+              <img src="{% static 'linux/images/clientes/6.jpg' %}" alt="Cliente 6">
+            </div>
+          </div>
+          <!-- Adicione mais .carousel-item conforme necessário -->
+        </div>
+        <a class="carousel-control-prev" href="#clienteCarousel" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#clienteCarousel" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

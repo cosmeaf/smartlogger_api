@@ -1,0 +1,140 @@
+/* Sidebar styling */
+.sidebar {
+  width: 220px;
+  background-color: #f8f9fa;
+  color: #343a40;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 30px;
+  overflow-y: auto;
+  border-right: 1px solid #dee2e6;
+}
+
+.sidebar .logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar .logo img {
+  max-width: 120px;
+  height: auto;
+}
+
+.sidebar h3 {
+  margin-top: 15px;
+  font-size: 22px;
+  font-weight: 500;
+  color: #343a40;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.sidebar ul li {
+  width: 100%;
+}
+
+.sidebar ul li a {
+  color: #343a40;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  font-size: 18px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar ul li a:hover {
+  background-color: #d3d6db; /* Tom mais suave ao hover */
+  border-left: 4px solid #5a6268; /* Cor de destaque mais neutra */
+  color: #5a6268; /* Cor neutra no hover */
+}
+
+.sidebar ul li a i {
+  margin-right: 12px;
+  font-size: 20px;
+}
+
+/* Header styling */
+header.navbar {
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa; /* Cor neutra para o fundo do header */
+}
+
+header .navbar-brand {
+  font-size: 1.25rem;
+  color: #343a40; /* Texto do título no header */
+}
+
+header .navbar-nav .nav-link {
+  color: #343a40;
+  padding: 0.5rem 1rem;
+}
+
+header .navbar-nav .dropdown-menu {
+  min-width: 200px;
+}
+
+/* Content styling */
+.content {
+  margin-left: 220px;
+  padding: 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  width: calc(100% - 220px);
+  overflow-y: auto;
+}
+
+/* Card styling */
+.card {
+  border-radius: 15px;
+  transition: transform 0.2s ease-in-out;
+  background-color: #ffffff; /* Fundo branco para os cards */
+  border: 1px solid #dee2e6; /* Borda sutil para definição */
+}
+.card-title {
+  margin-top: 10px;
+  color: #343a40; /* Cor neutra para os títulos */
+}
+
+.ml-4 {
+  margin-left: 1.5rem;
+}
+
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil ao hover */
+}
+
+.card .card-body i {
+  color: #6c757d; /* Cor neutra para ícones */
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.rounded {
+  border-radius: 15px !important;
+}
+
+.display-4 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #495057; /* Cor neutra e suave para os números */
+}
+
+.card i {
+  color: #6c757d; /* Cor fosca e neutra para os ícones */
+}

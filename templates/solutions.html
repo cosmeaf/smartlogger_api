@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Soluções</h1>
+    <p class="mt-4">Descubra as soluções que a Injetec oferece para o gerenciamento inteligente de sua frota.</p>
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <h3><a href="{% url 'limitador_de_velocidade' %}">Limitador de Velocidade</a></h3>
+            <p>Evite que as máquinas ultrapassem a velocidade programada.</p>
+        </div>
+        <div class="col-md-4">
+            <h3><a href="{% url 'router_remoto' %}">Router Remoto</a></h3>
+            <p>Solução de monitoramento e controle via web.</p>
+        </div>
+        <div class="col-md-4">
+            <h3><a href="{% url 'battery_check' %}">Battery Check</a></h3>
+            <p>Monitoramento de bateria com tecnologia exclusiva.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
