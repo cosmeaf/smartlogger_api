@@ -6,7 +6,7 @@ from django.core.wsgi import get_wsgi_application
 from datetime import datetime
 
 # Configuração do Django
-sys.path.append('/root/projects/django/django_smartlogger')
+sys.path.append('/root/projects/django/django_smartlogger')  # Certifique-se de que este caminho esteja correto
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 application = get_wsgi_application()
 

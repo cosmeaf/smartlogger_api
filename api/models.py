@@ -1,14 +1,21 @@
 from django.db import models
-from django.db.models import Sum
-from django.utils import timezone
-from datetime import timedelta, date
+from datetime import date
 from decimal import Decimal
+from model_utils import FieldTracker
+import os
+import uuid
 import logging
 
 logger = logging.getLogger(__name__)
 
 def current_year():
     return date.today().year
+
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('profile_pictures', filename)
+
 
 class Device(models.Model):
     device_id = models.CharField(max_length=255, primary_key=True, unique=True)
@@ -28,12 +35,6 @@ class Device(models.Model):
     gps_fix_status = models.CharField(max_length=50, verbose_name="GPS Fix Status", null=True, blank=True)
     input_state = models.CharField(max_length=255, verbose_name="Input State", null=True, blank=True)
     output_state = models.CharField(max_length=255, verbose_name="Output State", null=True, blank=True)
-    data_length = models.IntegerField(verbose_name="Data Length", null=True, blank=True)
-    driver_id = models.CharField(max_length=255, verbose_name="Driver ID", null=True, blank=True)
-    instant_speed = models.FloatField(verbose_name="Instant Speed", null=True, blank=True)
-    peak_speed = models.FloatField(verbose_name="Peak Speed", null=True, blank=True)
-    instant_temperature = models.FloatField(verbose_name="Instant Temperature", null=True, blank=True)
-    peak_temperature = models.FloatField(verbose_name="Peak Temperature", null=True, blank=True)
     mode = models.CharField(max_length=50, verbose_name="Mode", null=True, blank=True)
     report_type = models.CharField(max_length=50, verbose_name="Report Type", null=True, blank=True)
     message_number = models.CharField(max_length=50, verbose_name="Message Number", null=True, blank=True)
@@ -52,8 +53,12 @@ class Device(models.Model):
     trip_horimeter = models.FloatField(verbose_name="Trip Horimeter", null=True, blank=True)
     idle_time = models.FloatField(verbose_name="Idle Time", null=True, blank=True)
     impact = models.FloatField(verbose_name="Impact", null=True, blank=True)
+    tracker = FieldTracker(fields=['horimeter'])
     soc_battery_voltage = models.FloatField(verbose_name="SoC (Battery Voltage)", null=True, blank=True)
     calculated_temperature = models.FloatField(verbose_name="Calculated Temperature", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Última Atualização")
+
 
     def __str__(self):
         return f"Device {self.device_id} - {self.model}"
@@ -82,30 +87,14 @@ class Device(models.Model):
             raise ValueError(f"Failed to update HDR for device {self.device_id}. Original error: {e}") from e
 
 
-
-
 class Equipment(models.Model):
     device = models.OneToOneField('Device', on_delete=models.CASCADE, related_name='equipments')
-    in_manutenance = models.BooleanField(default=False)
+    in_manutenance = models.BooleanField(default=False, editable=False)
     initial_hour_machine = models.FloatField('Initial Hour Machine', default=0)
-    total_worked_hours = models.FloatField('Total Worked Hours', default=0, editable=False)
-    remaining_hours = models.FloatField('Remaining Hours', default=0.0, editable=False)
-    alarm_hours = models.FloatField('Alarm Hours', default=0.0)  # Pode ser editável
+    initial_hour_suntech = models.FloatField('Initial Hour Suntech', default=0, editable=False)
+    worked_hours = models.FloatField('Worked Hours', default=0)
     name = models.CharField('Name', max_length=255)
-    year = models.IntegerField('Year', blank=True, null=True, default=current_year)
     model = models.CharField('Model', max_length=255, default='N/A', blank=True, null=True)
-    measuring_point = models.CharField('Measuring Point', max_length=255, default='N/A', blank=True, null=True)
-    fuel = models.CharField('Fuel', max_length=8, default='DIESEL', blank=True, null=True)
-    pulse_number = models.IntegerField('Pulse Number', default=0, blank=True, null=True)
-    tire_perimeter = models.FloatField('Tire Perimeter (cm)', default=0.0, blank=True, null=True)
-    available_hours_per_month = models.FloatField('Available Hours per Month', default=0.0, blank=True, null=True)
-    average_consumption = models.FloatField('Average Consumption (m³/h - L/h - Kg/h)', default=0.0, blank=True, null=True)
-    speed_alert = models.FloatField('Speed Alert (km/h)', default=0.0, blank=True, null=True)
-    temperature_alert = models.FloatField('Temperature Alert (°C)', default=0.0, blank=True, null=True)
-    shock_alert = models.FloatField('Shock Alert (km/h)', default=0.0, blank=True, null=True)
-    effective_hours_odometer = models.CharField('Effective Hours or Odometer', max_length=255, default='ODOMETER', blank=True, null=True)
-    odometer = models.FloatField('Odometer', default=0.0, blank=True, null=True)
-    notes = models.TextField('Notes', null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -117,114 +106,102 @@ class Equipment(models.Model):
     def __str__(self):
         return f"{self.name} - {self.device.device_id}"
 
-
-    def increment_worked_hours(self):
-        """
-        Incrementa as horas trabalhadas em 1 a cada atualização do horímetro Suntech.
-        O valor do horímetro é tratado como um contador incremental, apenas para adicionar horas.
-        """
-        # Incrementa o total de horas trabalhadas em 1 a cada vez que o horímetro é atualizado
-        self.total_worked_hours += 1
-        logger.info(f"Horas trabalhadas incrementadas: {self.total_worked_hours}")
-
-    def calculate_remaining_hours(self):
-        """
-        Calcula as horas restantes com base no alarme de horas e nas horas trabalhadas.
-        """
-        if self.alarm_hours > 0:
-            self.remaining_hours = self.alarm_hours - self.total_worked_hours
-        else:
-            self.remaining_hours = self.total_worked_hours
-        logger.info(f"Horas restantes calculadas: {self.remaining_hours}")
-        return self.remaining_hours
+    def get_worked_hours(self):
+        suntech_increment = self.device.horimeter - self.initial_hour_suntech
+        worked_hours = self.initial_hour_machine + suntech_increment
+        
+        # Adicionando log para o cálculo de worked_hours
+        logger.info(f"Calculating worked_hours for {self.name}: "
+                    f"initial_hour_machine={self.initial_hour_machine}, "
+                    f"initial_hour_suntech={self.initial_hour_suntech}, "
+                    f"device_horimeter={self.device.horimeter}, "
+                    f"suntech_increment={suntech_increment}, "
+                    f"worked_hours={worked_hours}")
+        
+        return round(max(0, worked_hours), 2)
 
     def save(self, *args, **kwargs):
-        """
-        Override do método save para calcular total_worked_hours e remaining_hours antes de salvar.
-        """
-        # Atualiza as horas trabalhadas (incrementa em 1 a cada vez que é chamado)
-        self.increment_worked_hours()
+        if self._state.adding:
+            # Ao criar o equipamento, salva o horímetro inicial do Suntech
+            self.initial_hour_suntech = self.device.horimeter
+            logger.info(f"New Equipment: setting initial_hour_suntech={self.initial_hour_suntech} for {self.name}")
 
-        # Calcula as horas restantes
-        self.calculate_remaining_hours()
+        # Calcula o worked_hours antes de salvar
+        self.worked_hours = self.get_worked_hours()
+
+        logger.info(f"Saving Equipment {self.name}: worked_hours={self.worked_hours}")
 
         super().save(*args, **kwargs)
 
-
+        
 
 class Maintenance(models.Model):
-    equipament = models.ForeignKey('Equipment', on_delete=models.CASCADE, related_name='maintenances')
-    horimetro_inicial_suntech = models.FloatField('Ajuste de Zero Hora Suntech', default=0)
-    horimetro_inicial_maintenance = models.FloatField('AZ Hora Máquina', default=0)
-    horimetro_acumulado = models.FloatField('Horímetro Acumulado', default=0)
+    equipment = models.ForeignKey('Equipment', on_delete=models.CASCADE, related_name='maintenances')
+    initial_hour_suntech = models.FloatField('Initial Suntech Hour', default=0)
+    initial_hour_maintenance = models.FloatField('Initial Maintenance Hour', default=0)
+    worked_hours = models.FloatField('Worked Hours', default=0)
+    alarm_hours = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    remaining_hours = models.FloatField('Remaining Hours', default=0)
     name = models.CharField(max_length=255)
-    os = models.BooleanField(default=False)  # Status de Ordem de Serviço (em manutenção)
-    usage_hours = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    alarm_hours = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    os = models.BooleanField(default=False)
     obs = models.TextField(blank=True, null=True)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['equipament']),
-            models.Index(fields=['name']),
-            models.Index(fields=['os']),
-        ]
-        verbose_name_plural = "Maintenance Records"
-        verbose_name = "Maintenance Record"
+    def __str__(self):
+        return f"{self.name} - {self.equipment.name}"
 
-    @property
-    def horas_uso_peca(self):
-        if self.equipament and self.equipament.device:
-            hora_suntech = float(self.equipament.device.horimeter) - self.horimetro_inicial_suntech
-            horas_uso_peca = Decimal(self.usage_hours) + Decimal(hora_suntech) + Decimal(self.horimetro_acumulado)
-            return max(horas_uso_peca, Decimal(0))
-        return Decimal(0)
+    def get_worked_hours(self):
+        suntech_increment = self.equipment.device.horimeter - self.initial_hour_suntech
+        worked_hours = self.initial_hour_maintenance + suntech_increment
+        return round(worked_hours, 2)
 
-    @property
-    def remaining_hours(self):
-        return self.alarm_hours - self.horas_uso_peca
+    def get_remaining_hours(self):
+        worked_hours = self.get_worked_hours()
+        remaining_hours = float(self.alarm_hours) - worked_hours
+        return round(remaining_hours, 2)
 
-    @property
-    def background_color(self):
-        color = ""
-        if self.os:
-            remaining_hours = self.remaining_hours
-            if remaining_hours >= 0:
-                color = ""
-            elif remaining_hours >= -50:
-                color = "bg-yellow-300"
-            elif remaining_hours >= -100:
-                color = "bg-orange-300"
-            else:
-                color = "bg-red-300"
-        logger.debug(f"OS status: {self.os}, Background color: {color}")
-        return color
-
-    def atualizar_horimetro_acumulado(self):
-        if self.equipament and self.equipament.device:
-            self.horimetro_acumulado += float(self.equipament.device.horimeter) - self.horimetro_inicial_suntech
-            self.horimetro_inicial_suntech = float(self.equipament.device.horimeter)
-            self.save(update_fields=['horimetro_acumulado', 'horimetro_inicial_suntech'])
+    def reset_hours(self):
+        self.initial_hour_suntech = self.equipment.device.horimeter
+        self.initial_hour_maintenance = 0
+        self.worked_hours = 0
+        self.save(update_fields=['initial_hour_suntech', 'initial_hour_maintenance', 'worked_hours'])
 
     def save(self, *args, **kwargs):
-        # Quando salvar a manutenção, o horímetro Suntech atualiza normalmente
-        if self.equipament and self.equipament.device:
-            horimetro_atual = float(self.equipament.device.horimeter) if self.equipament.device.horimeter is not None else 0
-            self.horimetro_inicial_suntech = horimetro_atual
-            self.horimetro_inicial_maintenance = horimetro_atual
-
-        # Atualiza os status de manutenção para Device e Equipment
-        if self.equipament:
-            self.equipament.in_manutenção = self.os  # Atualiza o status de manutenção no Equipment
-            self.equipament.save(update_fields=['in_manutenção'])
-
-            if self.equipament.device:
-                self.equipament.device.in_manutenção = self.os  # Atualiza o status de manutenção no Device
-                self.equipament.device.save(update_fields=['in_manutenção'])
-
+        if not self.pk:
+            self.initial_hour_suntech = self.equipment.device.horimeter
+        self.worked_hours = self.get_worked_hours()
+        self.remaining_hours = self.get_remaining_hours()
         super().save(*args, **kwargs)
 
-    def reset_usage_hours(self):
-        self.usage_hours = Decimal(0)
-        self.horimetro_inicial_suntech = self.equipament.device.horimeter if self.equipament and self.equipament.device else 0
-        self.save(update_fields=['usage_hours', 'horimetro_inicial_suntech'])
+
+
+class MaintenanceResetLog(models.Model):
+    maintenance = models.ForeignKey('Maintenance', on_delete=models.CASCADE, related_name='reset_logs')
+    reset_date = models.DateTimeField(auto_now_add=True)
+    equipment_worked_hours = models.FloatField('Worked Hours Equipment', default=0)
+    maintenance_worked_hours = models.FloatField('Worked Hours Maintenance', default=0)
+    obs = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"Reset Log for {self.maintenance.name} on {self.reset_date}"
+    
+
+class Employee(models.Model):
+    first_name = models.CharField(max_length=100, verbose_name="Nome")
+    last_name = models.CharField(max_length=100, verbose_name="Sobrenome")
+    email = models.EmailField(unique=True, verbose_name="E-mail")
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Telefone")
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name="Endereço")
+    position = models.CharField(max_length=100, verbose_name="Cargo", blank=True, null=True)
+    hire_date = models.DateField(blank=True, null=True, verbose_name="Data de Contratação")
+    image = models.ImageField(upload_to=get_file_path, blank=True, null=True, verbose_name="Foto de Perfil")
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='employees', verbose_name="Equipamento", blank=True, null=True)  # Torna opcional
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name = "Funcionário"
+        verbose_name_plural = "Funcionários"
+        ordering = ['last_name', 'first_name']
+
+
